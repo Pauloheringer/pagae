@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { BarChart3, Download, Calendar, TrendingUp, Wallet, Check, FileWarning, Banknote } from 'lucide-react';
+import FinancialCommentary from '@/components/reports/FinancialCommentary';
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
@@ -129,6 +130,8 @@ export default function Reports() {
         <Card icon={FileWarning} label="Sem Comprovante" value={String(periodNoReceipt.length)} sub="pagamentos" accent="orange" />
         <Card icon={TrendingUp} label="Divergências" value={String(periodDivergence.length)} sub="pendências" accent="red" />
       </div>
+
+      <FinancialCommentary period={period} />
 
       {/* By account */}
       <div className="bg-card border border-border rounded-md p-4">

@@ -4,10 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import {
   LayoutDashboard, ClipboardCheck, ScanLine, FileText, KeyRound,
-  Users, BarChart3, Bot, Search, LogOut, Menu, X, UserCog, AlertTriangle, FileUp
+  Users, BarChart3, Bot, LogOut, Menu, X, UserCog, AlertTriangle, FileUp
 } from 'lucide-react';
 import KeepAliveOutlet from '@/components/KeepAliveOutlet';
 import BottomTabBar from '@/components/BottomTabBar';
+import QuickSearch from '@/components/QuickSearch';
 
 const KEEP_PATHS = ['/contratos', '/reconciliacao', '/clientes'];
 
@@ -122,19 +123,7 @@ export default function AdminLayout() {
             <button className="lg:hidden p-2 -ml-1 text-muted-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <div className="flex-1 max-w-xl relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar por nome, CPF, placa ou contrato..."
-                className="w-full bg-background border border-border rounded-md pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    navigate(`/clientes?q=${encodeURIComponent(e.target.value.trim())}`);
-                  }
-                }}
-              />
-            </div>
+            <QuickSearch />
             {activePixKey && (
               <Link to="/pix" className="hidden md:flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-md px-3 py-1.5 text-xs hover:bg-primary/20 transition-colors">
                 <KeyRound className="w-3.5 h-3.5 text-primary" />

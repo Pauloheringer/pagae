@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { formatCurrency, formatDate, formatPlate, formatPhone, daysUntil } from '@/lib/format';
 import StatusBadge from '@/components/StatusBadge';
 import { installmentStatusMap } from '@/lib/format';
-import { AlertTriangle, MessageCircle, Search, Users, Car, FileText } from 'lucide-react';
+import { AlertTriangle, MessageCircle, Search, Users, Car, FileText, Download } from 'lucide-react';
+import { downloadDelinquencyReport } from '@/lib/delinquencyReport';
 
 function formatDateLong(dateStr) {
   if (!dateStr) return '-';
@@ -91,19 +92,72 @@ Organize o pagamento até o vencimento para manter essa parcela em dia.`;
     window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
+  const handleExport = () => {
+    const list = filteredCustomers.map((cid) => {
+      const customer = getCustomer(cid);
+      const insts = grouped[cid];
+      const custSales = [...new Set(insts.map((i) => i.venda_id))].map(getSale).filter(Boolean);
+      return {
+        nome: customer?.nome_completo || 'Cliente',
+        cpf: customer?.cpf,
+        telefone: customer?.telefone,
+        whatsapp: customer?.whatsapp,
+        email: customer?.email,
+        endereco: customer?.endereco,
+        data_nascimento: customer?.data_nascimento,
+        contratos: custSales.map((s) => s.numero_contrato).filter(Boolean).join(', ') || '-',
+        veiculos: custSales
+          .map((s) => {
+            const v = getVehicle(s.veiculo_id);
+            return v ? `${v.marca || ''} ${v.modelo || ''}${v.placa ? ` (${v.placa.toUpperCase()})` : ''}`.trim() : null;
+          })
+          .filter(Boolean)
+          .join(', ') || '-',
+        parcelas: insts.map((i) => ({
+          numero: i.numero,
+          vencimento: i.vencimento,
+          dias: Math.abs(daysUntil(i.vencimento)),
+          valor: i.valor,
+          status: i.status,
+        })),
+        total: insts.reduce((s, i) => s + (i.valor - (i.valor_pago || 0)), 0),
+      };
+    }).sort((a, b) => b.total - a.total);
+
+    downloadDelinquencyReport({
+      debtors: list,
+      totals: {
+        clientes: list.length,
+        parcelas: list.reduce((s, d) => s + d.parcelas.length, 0),
+        valor: list.reduce((s, d) => s + d.total, 0),
+      },
+      generatedBy: user?.full_name || 'Admin',
+      generatedAt: new Date().toISOString(),
+    });
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-full p-8"><div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin" /></div>;
   }
 
   return (
     <div className="p-4 lg:p-6 space-y-4 max-w-[1400px] mx-auto">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-extrabold tracking-tight flex items-center gap-2">
-          <AlertTriangle className="w-6 h-6 text-red-400" /> Devedores & Cobrança
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {totalDebtors} cliente(s) com parcelas atrasadas • {overdue.length} parcela(s) em atraso • Total: {formatCurrency(totalOverdue)}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-extrabold tracking-tight flex items-center gap-2">
+            <AlertTriangle className="w-6 h-6 text-red-400" /> Devedores & Cobrança
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {totalDebtors} cliente(s) com parcelas atrasadas • {overdue.length} parcela(s) em atraso • Total: {formatCurrency(totalOverdue)}
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={filteredCustomers.length === 0}
+          className="flex items-center justify-center gap-2 bg-secondary border border-border hover:bg-accent font-semibold text-sm px-4 py-2.5 rounded-md disabled:opacity-50"
+        >
+          <Download className="w-4 h-4" /> Exportar Relatório PDF
+        </button>
       </div>
 
       <div className="relative max-w-md">

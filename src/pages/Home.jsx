@@ -4,6 +4,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { formatCurrency, formatDate, formatDateTime, reportStatusMap, installmentStatusMap } from '@/lib/format';
 import StatusBadge from '@/components/StatusBadge';
 import ReceiptImage from '@/components/ReceiptImage';
+import ReceiptModal from '@/components/ReceiptModal';
+import { confirmPayment } from '@/lib/confirmPayment';
 import { Image as ImageIcon, Check, X, AlertTriangle, TrendingUp, Wallet, FileWarning, Banknote, Clock, ScanLine, Wifi } from 'lucide-react';
 
 export default function Home() {
@@ -15,6 +17,7 @@ export default function Home() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [receipt, setReceipt] = useState(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -49,31 +52,13 @@ export default function Home() {
   const handleConfirm = async (report) => {
     setActionLoading(true);
     try {
-      await base44.entities.PaymentReport.update(report.id, {
-        status: 'confirmado',
-        conferido_por: user?.full_name || 'Admin',
-        data_conferencia: new Date().toISOString()
-      });
-      if (report.parcela_id) {
-        await base44.entities.Installment.update(report.parcela_id, {
-          status: 'paga',
-          valor_pago: report.valor_informado,
-          data_pagamento: report.data_pagamento || new Date().toISOString(),
-          data_confirmacao: new Date().toISOString(),
-          conferido_por: user?.full_name || 'Admin'
-        });
-      }
-      await base44.entities.AuditLog.create({
-        acao: 'confirmar_pagamento',
-        entidade: 'PaymentReport',
-        entidade_id: report.id,
-        detalhes: `Pagamento de ${formatCurrency(report.valor_informado)} confirmado`,
-        usuario_nome: user?.full_name || 'Admin'
-      });
+      const installment = await confirmPayment({ report, conferidoPor: user?.full_name || 'Admin' });
+      setReceipt({ report, installment });
       setSelected(null);
       loadData();
     } catch (e) {
       console.error(e);
+      alert('Erro: ' + e.message);
     } finally {
       setActionLoading(false);
     }
@@ -285,6 +270,14 @@ export default function Home() {
             <div className="text-sm font-bold text-foreground">{pixKey.tipo.toUpperCase()}: {pixKey.chave} — {pixKey.titular} ({pixKey.banco})</div>
           </div>
         </div>
+      )}
+
+      {receipt && (
+        <ReceiptModal
+          report={receipt.report}
+          installment={receipt.installment}
+          onClose={() => setReceipt(null)}
+        />
       )}
     </div>
   );

@@ -6,6 +6,8 @@ import StatusBadge from '@/components/StatusBadge';
 import ReceiptImage from '@/components/ReceiptImage';
 import { Check, X, AlertTriangle, ClipboardCheck, Filter } from 'lucide-react';
 import PullToRefresh from '@/components/PullToRefresh';
+import ReceiptModal from '@/components/ReceiptModal';
+import { confirmPayment } from '@/lib/confirmPayment';
 
 export default function Reconciliacao() {
   const { user } = useAuth();
@@ -13,6 +15,7 @@ export default function Reconciliacao() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, informado, em_analise, divergencia
   const [actionLoading, setActionLoading] = useState(null);
+  const [receipt, setReceipt] = useState(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -32,26 +35,8 @@ export default function Reconciliacao() {
   const handleConfirm = async (report) => {
     setActionLoading(report.id);
     try {
-      await base44.entities.PaymentReport.update(report.id, {
-        status: 'confirmado',
-        conferido_por: user?.full_name || 'Financeiro',
-        data_conferencia: new Date().toISOString()
-      });
-      if (report.parcela_id) {
-        await base44.entities.Installment.update(report.parcela_id, {
-          status: 'paga',
-          valor_pago: report.valor_informado,
-          data_confirmacao: new Date().toISOString(),
-          conferido_por: user?.full_name || 'Financeiro'
-        });
-      }
-      await base44.entities.AuditLog.create({
-        acao: 'confirmar_pagamento',
-        entidade: 'PaymentReport',
-        entidade_id: report.id,
-        detalhes: `Baixa confirmada: ${formatCurrency(report.valor_informado)}`,
-        usuario_nome: user?.full_name || 'Financeiro'
-      });
+      const installment = await confirmPayment({ report, conferidoPor: user?.full_name || 'Financeiro' });
+      setReceipt({ report, installment });
       loadData();
     } catch (e) { alert('Erro: ' + e.message); }
     finally { setActionLoading(null); }
@@ -191,6 +176,14 @@ export default function Reconciliacao() {
           </div>
         )}
       </div>
+
+      {receipt && (
+        <ReceiptModal
+          report={receipt.report}
+          installment={receipt.installment}
+          onClose={() => setReceipt(null)}
+        />
+      )}
     </div>
     </PullToRefresh>
   );
