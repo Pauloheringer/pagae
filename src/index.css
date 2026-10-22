@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 216 28% 7%;
+    --foreground: 213 28% 95%;
+    --card: 215 28% 11%;
+    --card-foreground: 213 28% 95%;
+    --popover: 215 28% 11%;
+    --popover-foreground: 213 28% 95%;
+    --primary: 212 92% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 19% 15%;
+    --secondary-foreground: 213 28% 95%;
+    --muted: 215 19% 15%;
+    --muted-foreground: 215 14% 55%;
+    --accent: 215 19% 18%;
+    --accent-foreground: 213 28% 95%;
+    --destructive: 0 72% 53%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 137 63% 33%;
+    --success-foreground: 0 0% 100%;
+    --border: 215 14% 21%;
+    --input: 215 14% 21%;
+    --ring: 212 92% 58%;
+    --radius: 0.375rem;
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Inter', sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+}
+
+@layer base {
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overscroll-behavior: none;
+  }
+
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  input, textarea, select, [contenteditable="true"], [contenteditable=""] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+
+  .h-dvh {
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    overscroll-behavior-y: contain;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
