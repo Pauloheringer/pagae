@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { analyzeContract } from '@/functions/analyzeContract';
 import { formatCurrency } from '@/lib/format';
-import { Upload, FileText, Sparkles, Check, X, Loader2 } from 'lucide-react';
+import { Upload, Sparkles, Check, X, Loader2 } from 'lucide-react';
 
 export default function ContractPhotoUpload({ onExtracted }) {
   const [fileUri, setFileUri] = useState('');

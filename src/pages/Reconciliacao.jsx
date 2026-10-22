@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { formatCurrency, formatDate, formatDateTime, reportStatusMap } from '@/lib/format';
+import { formatCurrency, formatDateTime, reportStatusMap } from '@/lib/format';
 import StatusBadge from '@/components/StatusBadge';
 import ReceiptImage from '@/components/ReceiptImage';
-import { Check, X, AlertTriangle, ClipboardCheck, Filter } from 'lucide-react';
+import { Check, X, AlertTriangle, ClipboardCheck } from 'lucide-react';
 import PullToRefresh from '@/components/PullToRefresh';
 import ReceiptModal from '@/components/ReceiptModal';
 import { confirmPayment } from '@/lib/confirmPayment';

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { formatCurrency, formatDate, formatDateTime, reportStatusMap, installmentStatusMap } from '@/lib/format';
+import { formatCurrency, formatDateTime, reportStatusMap } from '@/lib/format';
 import StatusBadge from '@/components/StatusBadge';
 import ReceiptImage from '@/components/ReceiptImage';
 import ReceiptModal from '@/components/ReceiptModal';
 import { confirmPayment } from '@/lib/confirmPayment';
-import { Image as ImageIcon, Check, X, AlertTriangle, TrendingUp, Wallet, FileWarning, Banknote, Clock, ScanLine, Wifi } from 'lucide-react';
+import { Image as ImageIcon, Check, AlertTriangle, Wallet, FileWarning, Banknote, Clock, ScanLine, Wifi } from 'lucide-react';
 
 export default function Home() {
   const { user } = useAuth();

@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { formatCurrency, formatDate, formatPlate, formatPhone, daysUntil } from '@/lib/format';
 import StatusBadge from '@/components/StatusBadge';
 import { installmentStatusMap } from '@/lib/format';
-import { AlertTriangle, MessageCircle, Search, Users, Car, FileText, Download } from 'lucide-react';
+import { AlertTriangle, MessageCircle, Search, Users, Car, Download } from 'lucide-react';
 import { downloadDelinquencyReport } from '@/lib/delinquencyReport';
 
 function formatDateLong(dateStr) {

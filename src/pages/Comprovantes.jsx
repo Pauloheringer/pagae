@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatDate, reportStatusMap } from '@/lib/format';
 import StatusBadge from '@/components/StatusBadge';
 import ReceiptImage from '@/components/ReceiptImage';
-import { ScanLine, Filter, Upload } from 'lucide-react';
+import { ScanLine, Upload } from 'lucide-react';
 import { analyzeReceipt } from '@/functions/analyzeReceipt';
 
 export default function Comprovantes() {

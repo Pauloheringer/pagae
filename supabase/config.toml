@@ -1,0 +1,14 @@
+# Configuração do Supabase CLI para este projeto.
+project_id = "pagae"
+
+# O portal do cliente e o chat não usam login do Supabase (o cliente entra com
+# CPF + telefone), então essas funções aceitam chamadas sem JWT de usuário e
+# validam a sessão assinada do portal por conta própria.
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.customer-chat]
+verify_jwt = false
+
+[functions.portal-upload]
+verify_jwt = false

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { analyzeVehicle } from '@/functions/analyzeVehicle';
-import { Upload, Car, Sparkles, Check, X, Loader2 } from 'lucide-react';
+import { Car, Sparkles, Check, X, Loader2 } from 'lucide-react';
 
 export default function VehiclePhotoUpload({ label, onExtracted }) {
   const [fileUri, setFileUri] = useState('');
