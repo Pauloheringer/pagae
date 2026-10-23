@@ -9,7 +9,7 @@ serviços com plano gratuito:
 
 | Parte | Onde roda | Custo |
 | --- | --- | --- |
-| Site (React + Vite) | Vercel | grátis |
+| Site (React + Vite) | Cloudflare Pages | grátis (sem limite de visitas) |
 | Banco, login e arquivos | Supabase | grátis (500 MB de banco, 1 GB de arquivos) |
 | Funções do servidor | Supabase Edge Functions | grátis (500 mil chamadas/mês) |
 | IA (comprovantes, documentos, chat) | Google Gemini | grátis dentro do limite diário |
@@ -38,8 +38,8 @@ serviços com plano gratuito:
 
 - **Projeto Supabase:** `pagae` (São Paulo), ref `bczolxydkubozqdcidwi`.
   Banco, regras de acesso, armazenamento e as 11 funções já estão publicados.
-- **Endereço e chave pública** já estão em `.env.production`; a Vercel não
-  precisa de variáveis extras.
+- **Endereço e chave pública** já estão em `.env.production`; o Cloudflare
+  Pages não precisa de variáveis extras.
 
 ## O que falta configurar (uma vez)
 
@@ -53,11 +53,18 @@ serviços com plano gratuito:
    [Authentication > Emails](https://supabase.com/dashboard/project/bczolxydkubozqdcidwi/auth/templates),
    no modelo *Confirm signup*, use o código no lugar do link:
    `Seu código de confirmação do Pagaê é: {{ .Token }}`
-3. **Site no ar**: em [vercel.com/new](https://vercel.com/new), importe o
-   repositório `Pauloheringer/pagae` e clique em *Deploy*.
+3. **Site no ar (Cloudflare Pages)**: em
+   [dash.cloudflare.com](https://dash.cloudflare.com) > *Workers & Pages* >
+   *Create* > *Pages* > *Connect to Git*, escolha `Pauloheringer/pagae` e use:
+   - Framework preset: **React (Vite)**
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+
+   Cada `git push` na branch `main` publica sozinho. O endereço fica algo como
+   `https://pagae.pages.dev`; domínio próprio em *Custom domains*.
 4. **Endereço do site no login**: em
    [Authentication > URL Configuration](https://supabase.com/dashboard/project/bczolxydkubozqdcidwi/auth/url-configuration),
-   coloque o endereço da Vercel (ex.: `https://pagae.vercel.app`) em
+   coloque o endereço do Cloudflare Pages (ex.: `https://pagae.pages.dev`) em
    *Site URL* e em *Redirect URLs*.
 5. **Primeiro administrador**: crie sua conta pela tela **Cadastro** do site e
    depois rode no

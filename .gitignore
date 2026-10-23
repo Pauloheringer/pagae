@@ -28,7 +28,7 @@ dist-ssr
 *.sw?
 
 .vite
-.vercel
+.wrangler
 supabase/.temp
 
 # Valores públicos do Supabase (podem ir para o Git)
