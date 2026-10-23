@@ -221,6 +221,7 @@ create table public.contract_documents (
 create or replace function public.touch_row()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_date := now();
@@ -244,6 +245,7 @@ end $$;
 create or replace function public.touch_profile()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_date := now();
@@ -329,3 +331,6 @@ create policy "admin lê arquivos" on storage.objects for select
   using (bucket_id = 'private-files' and public.is_admin());
 create policy "admin apaga arquivos" on storage.objects for delete
   using (bucket_id = 'private-files' and public.is_admin());
+
+-- Gatilho não deve ser chamado pela API.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;

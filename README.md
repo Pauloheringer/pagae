@@ -34,57 +34,60 @@ serviços com plano gratuito:
 - **Regras de acesso no banco (RLS):** só administradores leem e alteram os
   dados; o histórico de auditoria não pode ser apagado.
 
-## Instalação (uma vez)
+## Situação atual
 
-### 1. Supabase
+- **Projeto Supabase:** `pagae` (São Paulo), ref `bczolxydkubozqdcidwi`.
+  Banco, regras de acesso, armazenamento e as 11 funções já estão publicados.
+- **Endereço e chave pública** já estão em `.env.production`; a Vercel não
+  precisa de variáveis extras.
 
-1. Crie um projeto em [supabase.com](https://supabase.com) (região São Paulo).
-2. Em **SQL Editor**, rode o arquivo `supabase/migrations/20261022000000_init.sql`.
-3. Em **Authentication > Emails > Confirm signup**, troque o link pelo código
-   de 6 dígitos (a tela de cadastro pede o código). Ex.:
+## O que falta configurar (uma vez)
+
+1. **Segredos das funções** em
+   [Supabase > Edge Functions > Secrets](https://supabase.com/dashboard/project/bczolxydkubozqdcidwi/functions/secrets):
+   - `GEMINI_API_KEY`: sua chave do Google AI Studio.
+   - `PORTAL_SESSION_SECRET`: um texto longo e aleatório (ex.: gere com
+     `openssl rand -hex 32`). Não troque depois, ou os clientes precisarão
+     entrar de novo.
+2. **E-mail de cadastro com código**: em
+   [Authentication > Emails](https://supabase.com/dashboard/project/bczolxydkubozqdcidwi/auth/templates),
+   no modelo *Confirm signup*, use o código no lugar do link:
    `Seu código de confirmação do Pagaê é: {{ .Token }}`
-4. Em **Authentication > URL Configuration**, coloque o endereço do site
-   (ex.: `https://pagae.vercel.app`) em *Site URL* e em *Redirect URLs*.
-5. Publique as funções (precisa do [Supabase CLI](https://supabase.com/docs/guides/cli)):
+3. **Site no ar**: em [vercel.com/new](https://vercel.com/new), importe o
+   repositório `Pauloheringer/pagae` e clique em *Deploy*.
+4. **Endereço do site no login**: em
+   [Authentication > URL Configuration](https://supabase.com/dashboard/project/bczolxydkubozqdcidwi/auth/url-configuration),
+   coloque o endereço da Vercel (ex.: `https://pagae.vercel.app`) em
+   *Site URL* e em *Redirect URLs*.
+5. **Primeiro administrador**: crie sua conta pela tela **Cadastro** do site e
+   depois rode no
+   [SQL Editor](https://supabase.com/dashboard/project/bczolxydkubozqdcidwi/sql/new):
 
-   ```bash
-   supabase login
-   supabase link --project-ref SEU_PROJECT_REF
-   supabase functions deploy
+   ```sql
+   update public.profiles set role = 'admin' where email = 'seu@email.com';
    ```
 
-6. Configure os segredos das funções:
+   Os próximos administradores você convida pela tela **Usuários & Acessos**.
 
-   ```bash
-   supabase secrets set GEMINI_API_KEY=sua-chave PORTAL_SESSION_SECRET=$(openssl rand -hex 32)
-   ```
+## IA
 
-   A chave do Gemini é gratuita em <https://aistudio.google.com/apikey>.
-   Para usar o Claude no lugar do Gemini: `AI_PROVIDER=anthropic` e
-   `ANTHROPIC_API_KEY=...`.
+As funções usam o Google Gemini (`gemini-flash-latest`, com
+`gemini-flash-lite-latest` de reserva quando o primeiro estiver
+sobrecarregado). Para trocar de modelo, crie o segredo `GEMINI_MODEL` com uma
+lista separada por vírgula. Para usar o Claude: `AI_PROVIDER=anthropic` e
+`ANTHROPIC_API_KEY`.
 
-### 2. Primeiro administrador
+## Atualizar as funções depois de mudar o código
 
-Crie sua conta pela tela **Cadastro** do app (ou em *Authentication > Users*)
-e depois, no **SQL Editor**:
-
-```sql
-update public.profiles set role = 'admin' where email = 'seu@email.com';
+```bash
+supabase login
+supabase link --project-ref bczolxydkubozqdcidwi
+supabase functions deploy
 ```
-
-Os próximos administradores você convida pela tela **Usuários & Acessos**.
-
-### 3. Vercel
-
-1. Em [vercel.com](https://vercel.com), importe este repositório.
-2. Em *Environment Variables*, adicione `VITE_SUPABASE_URL` e
-   `VITE_SUPABASE_ANON_KEY` (Supabase > Project Settings > API).
-3. Deploy. Para usar seu domínio, adicione-o em *Settings > Domains*.
 
 ## Rodar no computador
 
 ```bash
-cp .env.example .env.local   # preencha com os dados do Supabase
 npm install
 npm run dev
 ```

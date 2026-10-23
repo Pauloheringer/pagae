@@ -30,3 +30,7 @@ dist-ssr
 .vite
 .vercel
 supabase/.temp
+
+# Valores públicos do Supabase (podem ir para o Git)
+!.env.production
+!.env.development

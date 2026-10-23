@@ -3,7 +3,7 @@
 //
 // Segredos (Supabase > Edge Functions > Secrets):
 //   GEMINI_API_KEY      chave do Google AI Studio (https://aistudio.google.com/apikey)
-//   GEMINI_MODEL        opcional, padrão gemini-2.5-flash
+//   GEMINI_MODEL        opcional, lista separada por vírgula (padrão: gemini-flash-latest,gemini-flash-lite-latest)
 //   AI_PROVIDER         opcional: gemini (padrão) ou anthropic
 //   ANTHROPIC_API_KEY   se usar Claude
 //   ANTHROPIC_MODEL     opcional, padrão claude-haiku-5-5
@@ -50,27 +50,39 @@ function parseJson(text: string) {
   }
 }
 
+// Os modelos do Gemini são aposentados com frequência e às vezes ficam
+// sobrecarregados (503). Os apelidos "-latest" acompanham a versão atual, e
+// se um estiver indisponível tentamos o próximo da lista.
+const DEFAULT_GEMINI_MODELS = 'gemini-flash-latest,gemini-flash-lite-latest';
+
 async function callGemini(prompt: string, files: FilePart[], wantJson: boolean): Promise<string> {
   const key = Deno.env.get('GEMINI_API_KEY');
   if (!key) throw new Error('GEMINI_API_KEY não configurada nas Edge Functions do Supabase');
-  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({
-      contents: [{
-        role: 'user',
-        parts: [
-          ...files.map((f) => ({ inline_data: { mime_type: f.mimeType, data: f.data } })),
-          { text: prompt },
-        ],
-      }],
-      generationConfig: wantJson ? { responseMimeType: 'application/json', temperature: 0.1 } : { temperature: 0.3 },
-    }),
+  const models = (Deno.env.get('GEMINI_MODEL') || DEFAULT_GEMINI_MODELS).split(',').map((m) => m.trim()).filter(Boolean);
+  const payload = JSON.stringify({
+    contents: [{
+      role: 'user',
+      parts: [
+        ...files.map((f) => ({ inline_data: { mime_type: f.mimeType, data: f.data } })),
+        { text: prompt },
+      ],
+    }],
+    generationConfig: wantJson ? { responseMimeType: 'application/json', temperature: 0.1 } : { temperature: 0.3 },
   });
-  const body = await res.json();
-  if (!res.ok) throw new Error(`Gemini: ${body?.error?.message || res.status}`);
-  return (body.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || '').join('');
+  let lastError = '';
+  for (const model of models) {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: payload,
+    });
+    const body = await res.json();
+    if (res.ok) return (body.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || '').join('');
+    lastError = body?.error?.message || String(res.status);
+    // Só tenta outro modelo quando o problema é do modelo (sobrecarga, cota, aposentado).
+    if (![404, 429, 500, 503].includes(res.status)) break;
+  }
+  throw new Error(`Gemini: ${lastError}`);
 }
 
 async function callClaude(prompt: string, files: FilePart[]): Promise<string> {
